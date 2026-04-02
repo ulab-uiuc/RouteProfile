@@ -1,0 +1,265 @@
+{
+  "qwen2.5-7b-instruct": {
+    "size": "7B",
+    "feature": "Qwen2.5-7B-Instruct represents an upgraded version of the Qwen model series, featuring significantly enhanced multilingual capabilities across diverse language tasks. This improved model is competitively priced at $0.30 per million input tokens and $0.30 per million output tokens.",
+    "input_price": 0.2,
+    "output_price": 0.2,
+    "model": "qwen/qwen2.5-7b-instruct",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 35.2,
+    "detailed_scores": {
+       "ifeval": 75.85,
+       "bbh": 53.94,
+       "math": 50.0,
+       "gpqa": 29.11,
+       "musr": 40.2,
+       "mmlu_pro": 42.87
+    },
+    "parameters": 7.616,
+    "architecture": "Qwen2ForCausalLM",
+    "license": "apache-2.0",
+    "tags": [
+      "chat"
+    ],
+    "languages": [
+      "en"
+    ]
+  },
+  "gemma-2-9b-it": {
+    "size": "9B",
+    "feature": "Gemma-2-9B-IT is a 9-billion parameter instruction-tuned model from Google, designed for general text processing and conversational applications. This compact yet capable model offers exceptional value with ultra-low pricing of $0.10 per million input tokens and $0.10 per million output tokens.",
+    "input_price": 0.1,
+    "output_price": 0.1,
+    "model": "google/gemma-2-9b-it",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 32.07,
+    "detailed_scores": {
+       "ifeval": 74.36,
+       "bbh": 59.9,
+       "math": 19.49,
+       "gpqa": 36.07,
+       "musr": 40.73,
+       "mmlu_pro": 38.75
+    },
+    "parameters": 9.0,
+    "architecture": "Gemma2ForCausalLM",
+    "license": "gemma",
+    "tags": [
+      "conversational"
+    ]
+  },
+  "llama-3.1-8b-instruct": {
+    "size": "8B",
+    "feature": "Llama-3.1-8B-Instruct is Meta's 8-billion parameter model from the advanced Llama-3 series, specifically designed for conversational AI and complex reasoning tasks. This versatile model combines strong performance with reasonable costs at $0.20 per million input tokens and $0.20 per million output tokens.",
+    "input_price": 0.2,
+    "output_price": 0.2,
+    "model": "meta/llama-3.1-8b-instruct",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 24.02,
+    "detailed_scores": {
+       "ifeval": 50.58,
+       "bbh": 50.88,
+       "math": 15.48,
+       "gpqa": 32.13,
+       "musr": 39.98,
+       "mmlu_pro": 37.77
+    },
+    "parameters": 8.03,
+    "architecture": "LlamaForCausalLM",
+    "license": "llama3.1",
+    "tags": [
+      "facebook",
+      "meta",
+      "pytorch",
+      "llama",
+      "llama-3"
+    ],
+    "languages": [
+      "en",
+      "de",
+      "fr",
+      "it",
+      "pt",
+      "hi",
+      "es",
+      "th"
+    ]
+  },
+  "mixtral-8x7b-instruct-v0.1": {
+    "size": "56B",
+    "feature": "Mixtral-8x7B-Instruct-v0.1 is a 56-billion parameter Mixture of Experts (MoE) model composed of eight 7-billion parameter expert models, specifically optimized for creative text generation. This innovative architecture provides high-quality outputs while maintaining efficiency, available at $0.60 per million input and output tokens.",
+    "input_price": 0.6,
+    "output_price": 0.6,
+    "model": "mistralai/mixtral-8x7b-instruct-v0.1",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 23.82,
+    "detailed_scores": {
+      "ifeval": 55.99,
+      "bbh": 49.62,
+      "math": 9.14,
+      "gpqa": 30.29,
+      "musr": 42.03,
+      "mmlu_pro": 36.92
+    },
+    "parameters": 46.703,
+    "architecture": "MixtralForCausalLM",
+    "license": "apache-2.0",
+    "tags": [
+      "vllm"
+    ],
+    "languages": [
+      "fr",
+      "it",
+      "de",
+      "es",
+      "en"
+    ]
+  },
+  "mixtral-8x22b-instruct-v0.1": {
+    "size": "176B",
+    "feature": "Mixtral-8x22B-Instruct-v0.1 is an advanced 176-billion parameter Mixture of Experts model comprising eight 22-billion parameter expert components. This large-scale MoE architecture delivers exceptional performance across diverse tasks while maintaining computational efficiency, priced at $1.20 per million input and output tokens.",
+    "input_price": 1.2,
+    "output_price": 1.2,
+    "model": "mistralai/mixtral-8x22b-instruct-v0.1",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 33.89,
+    "detailed_scores": {
+      "ifeval": 71.84,
+      "bbh": 61.25,
+      "math": 18.73,
+      "gpqa": 37.33,
+      "musr": 43.11,
+      "mmlu_pro": 44.83
+    },
+    "parameters": 140.621,
+    "architecture": "MixtralForCausalLM",
+    "license": "apache-2.0",
+    "tags": [
+      "mistral-common"
+    ],
+    "languages": [
+      "en",
+      "es",
+      "it",
+      "de",
+      "fr"
+    ]
+  },
+  "llama-3.2-3b-instruct": {
+    "size": "3B",
+    "feature": "Llama-3.2-3B-Instruct is Meta's ultra-lightweight 3-billion parameter model optimized for speed and efficiency. Ideal for simple tasks requiring fast responses, it offers the lowest cost in the Llama family at $0.06 per million input tokens and $0.06 per million output tokens.",
+    "input_price": 0.06,
+    "output_price": 0.06,
+    "model": "meta/llama-3.2-3b-instruct",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 24.2,
+    "detailed_scores": {
+       "ifeval": 73.93,
+       "bbh": 46.1,
+       "math": 17.67,
+       "gpqa": 27.85,
+       "musr": 35.29,
+       "mmlu_pro": 31.95
+    },
+    "parameters": 3.213,
+    "architecture": "LlamaForCausalLM",
+    "license": "llama3.2",
+    "tags": [
+      "facebook",
+      "meta",
+      "pytorch",
+      "llama",
+      "llama-3"
+    ],
+    "languages": [
+      "en",
+      "de",
+      "fr",
+      "it",
+      "pt",
+      "hi",
+      "es",
+      "th"
+    ]
+  },
+  "mistral-small-24b-instruct-2501-bf16": {
+    "size": "24B",
+    "feature": "Mistral-Small-3-24B-Instruct is Mistral AI's latest generation compact model, delivering impressive performance from just 24 billion parameters. This efficient model excels at instruction-following tasks at a very competitive price of $0.10 per million input tokens and $0.30 per million output tokens.",
+    "input_price": 0.1,
+    "output_price": 0.3,
+    "model": "mistralai/Mistral-Small-24B-Instruct-2501",
+    "service": "Together",
+    "api_endpoint": "https://api.together.xyz/v1",
+    "average_score": 38.67,
+    "detailed_scores": {
+      "ifeval": 62.83,
+      "bbh": 67.13,
+      "math": 32.25,
+      "gpqa": 39.51,
+      "musr": 46.18,
+      "mmlu_pro": 53.95
+    },
+    "parameters": 23.572,
+    "architecture": "MistralForCausalLM",
+    "license": "apache-2.0",
+    "tags": [
+      "mlx"
+    ],
+    "languages": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "it",
+      "pt",
+      "zh",
+      "ja",
+      "ru",
+      "ko"
+    ]
+  },
+  "llama-3.3-70b-instruct": {
+    "size": "70B",
+    "feature": "Llama-3.3-70B-Instruct-Turbo is Meta's optimized 70-billion parameter model from the Llama 3.3 series, one of the most widely deployed open-source models in the community. This turbo variant provides faster inference while maintaining high quality, at $0.88 per million input and output tokens.",
+    "input_price": 0.88,
+    "output_price": 0.88,
+    "model": "meta/llama-3.3-70b-instruct",
+    "service": "NVIDIA",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
+    "average_score": 44.85,
+    "detailed_scores": {
+      "ifeval": 89.98,
+      "bbh": 69.19,
+      "math": 48.34,
+      "gpqa": 32.89,
+      "musr": 44.61,
+      "mmlu_pro": 53.32
+    },
+    "parameters": 70.554,
+    "architecture": "LlamaForCausalLM",
+    "license": "llama3.3",
+    "tags": [
+      "facebook",
+      "meta",
+      "pytorch",
+      "llama",
+      "llama-3"
+    ],
+    "languages": [
+      "en",
+      "fr",
+      "it",
+      "pt",
+      "hi",
+      "es",
+      "th",
+      "de"
+    ]
+  }
+}

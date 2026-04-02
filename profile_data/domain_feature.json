@@ -1,0 +1,8 @@
+{
+  "knowledge": "Tasks requiring broad factual knowledge, academic understanding, and evidence-grounded question answering across domains.",
+  "reasoning": "Tasks requiring commonsense reasoning, multi-step inference, logical deduction, and robust decision making.",
+  "qa": "Tasks centered on question answering with retrieval, reading comprehension, and answer faithfulness to provided evidence.",
+  "math": "Tasks requiring arithmetic, symbolic manipulation, theorem application, and multi-step mathematical problem solving.",
+  "coding": "Tasks requiring program synthesis, debugging, and functional correctness under executable unit tests.",
+  "alignment": "Tasks evaluating instruction following, helpfulness, harmlessness, truthfulness, and preference alignment in assistant behavior."
+}

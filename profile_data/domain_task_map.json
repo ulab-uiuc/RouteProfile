@@ -1,0 +1,53 @@
+{
+  "knowledge": [
+    "mmlu",
+    "mmlu_pro",
+    "C-Eval",
+    "AGIEval English",
+    "SQuAD",
+    "gpqa",
+    "natural_qa",
+    "trivia_qa"
+  ],
+  "reasoning": [
+    "bbh",
+    "TheoremQA",
+    "WinoGrande",
+    "OpenBookQA",
+    "BoolQ",
+    "DROP",
+    "musr",
+    "gpqa",
+    "agentverse-logicgrid",
+    "commonsense_qa",
+    "openbook_qa",
+    "arc_challenge"
+  ],
+  "qa": [
+    "SQuAD",
+    "BoolQ",
+    "DROP",
+    "TruthfulQA",
+    "commongen",
+    "natural_qa",
+    "trivia_qa"
+  ],
+  "math": [
+    "math",
+    "TheoremQA",
+    "agentverse-mgsm",
+    "gsm8k"
+  ],
+  "coding": [
+    "MultiPL-E",
+    "EvalPlus",
+    "mbpp",
+    "human_eval"
+  ],
+  "alignment": [
+    "ifeval",
+    "WildBench",
+    "TruthfulQA",
+    "commongen"
+  ]
+}

@@ -1,0 +1,32 @@
+# RouteProfile dependencies
+# Install with: pip install -r requirements.txt
+#
+# Note: PyTorch and PyTorch Geometric versions must be compatible.
+# See https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html
+# for the correct torch-geometric extras for your CUDA version.
+
+# Core deep learning
+torch>=2.1.0
+torchvision>=0.16.0
+
+# Graph neural networks (PyTorch Geometric)
+torch_geometric>=2.4.0
+# torch_scatter, torch_sparse are required by torch_geometric; install via:
+#   pip install torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-<VERSION>+<CUDA>.html
+
+# Transformers (Longformer for text encoding)
+transformers>=4.35.0
+sentencepiece
+
+# Numerical computation
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Data handling
+pyyaml>=6.0
+
+# Optional: vLLM for text_gnn_profile.py (requires GPU, install separately)
+# vllm>=0.3.0
+
+# LLMRouter
+pip install llmrouter-lib
