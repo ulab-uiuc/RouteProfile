@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="RouteProfile: Elucidating the Design Space of LLM Profiles for Routing">
+  <meta name="keywords" content="Large Language Models, LLM Profiles, LLM Routers">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RouteProfile: Elucidating the Design Space of LLM Profiles for Routing</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://github.com/ulab-uiuc/RouteProfile">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://github.com/ulab-uiuc/RouteProfile">
+            RouteProfile
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">RouteProfile: Elucidating the Design Space of LLM Profiles for Routing</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a>Jingjun Xu</a><sup>* 1</sup>,</span>
+            <span class="author-block">
+              <a>Hongji Pu</a><sup>* 1</sup>,</span>
+            <span class="author-block">
+              <a>Tao Feng</a><sup>* 1</sup>,</span>
+            <span class="author-block">
+              <a>Haozhen Zhang</a><sup>* 2</sup>,</span>
+            <span class="author-block">
+              <a>Jiaxuan You</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a>Ge Liu</a><sup>1</sup>,
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>University of Illinois at Urbana-Champaign</span><br>
+            <span class="author-block"><sup>2</sup>Nanyang Technological University</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/placeholder"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/ulab-uiuc/RouteProfile"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- <span class="link-block">
+                <a href="xxx"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-X"></i>
+                  </span>
+                  <span>Twitter</span>
+                  </a>
+              </span> -->
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            As the large language model (LLM) ecosystem expands, individual models exhibit varying capabilities across queries, benchmarks, and domains, motivating the development of LLM routing. 
+            While prior work has largely focused on router mechanism design, LLM profiles, which capture model capabilities, remain underexplored. 
+            In this work, we ask: <i>How does LLM profile design affect routing performance across different routers?</i>
+            Addressing this question helps clarify the role of profiles in routing, disentangle profile design from router design, and enable fairer comparison and more principled development of routing systems.
+            To this end, we view LLM profiling as a structured information integration problem over heterogeneous interaction histories and develop a general design space of LLM profiles, named \method, along four key dimensions: <i>organizational form</i>, <i>representation type</i>, <i>aggregation depth</i>, and <i>learning configuration</i>.
+            Through systematic evaluation across three representative routers under both standard and new-LLM generalization settings, we show that structured profiles consistently outperform flat ones, query-level signals are more reliable than coarse domain-level signals, and generalization to newly introduced models benefits most from structured profiles under trainable configurations.
+            Overall, our work highlights LLM profile design as an important direction for future routing research.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Design Space Section -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">RouteProfile Design Space</h2>
+        <div class="content has-text-justified">
+          <p>
+            We view LLM profiling as a <em>structured information integration problem</em> over heterogeneous interaction histories spanning model family metadata, domain coverage, benchmark evaluations, and query-level instances.
+            RouteProfile characterizes the design space of LLM profiles along four key dimensions:
+          </p>
+          <p>
+            <b>Organizational Form</b> specifies how interaction histories are organized before integration.
+            In a <em>flat</em> form, available information is directly concatenated into plain text or a single vector.
+            In a <em>structured</em> form, relational information among models, tasks, domains, and queries is explicitly modeled through a graph, enabling richer relational reasoning.
+          </p>
+          <p>
+            <b>Representation Type</b> determines the information fusion mechanism.
+            <em>Text</em> representations are produced by prompting an LLM to summarize neighborhood information into natural language descriptions.
+            <em>Embedding</em> representations are dense vectors computed through neural message passing, capturing fine-grained semantic signals.
+          </p>
+          <p>
+            <b>Aggregation Depth</b> controls the scope of information integration within the graph, ranging from local (0-hop, no neighborhood) to multi-hop aggregation that incorporates higher-order context from the interaction graph.
+          </p>
+          <p>
+            <b>Learning Configuration</b> indicates whether the profiling process is training-free or trainable.
+            In a <em>trainable</em> setting, the aggregation function can be optimized via self-supervised masked reconstruction on the interaction graph, learning to produce more discriminative model representations.
+          </p>
+        </div>
+        <div>
+          <img src="./static/figs/routeprofile.png" alt="RouteProfile Design Space Overview" width="800px"/>
+          <p>Overview of the RouteProfile design space. LLM profiles are constructed from interaction histories along four dimensions: organizational form, representation type, aggregation depth, and learning configuration.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Instantiated Methods Section -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Instantiated Design Choices</h2>
+        <div class="content has-text-justified">
+          <p>
+            We present four concrete instantiations of the RouteProfile design space, each varying along the four dimensions.
+            These profiles serve as representative configurations for systematic evaluation across routing settings.
+          </p>
+        </div>
+        <div class="content">
+          <table class="table is-bordered is-striped is-hoverable is-fullwidth" style="text-align: center;">
+            <thead>
+              <tr style="background-color: #363636; color: white;">
+                <th style="color: white; text-align: center;">Method</th>
+                <th style="color: white; text-align: center;">Org. Form</th>
+                <th style="color: white; text-align: center;">Repr. Type</th>
+                <th style="color: white; text-align: center;">Agg. Depth</th>
+                <th style="color: white; text-align: center;">Learning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Flat Aggregation</strong></td>
+                <td>Flat</td>
+                <td>Text</td>
+                <td>0</td>
+                <td>Training-free</td>
+              </tr>
+              <tr>
+                <td><strong>Embedding-Based GNN</strong></td>
+                <td>Structured</td>
+                <td>Embedding</td>
+                <td>Multi-hop</td>
+                <td>Training-free</td>
+              </tr>
+              <tr>
+                <td><strong>Text-Based GNN</strong></td>
+                <td>Structured</td>
+                <td>Text</td>
+                <td>Multi-hop</td>
+                <td>Training-free</td>
+              </tr>
+              <tr>
+                <td><strong>Trainable GNN</strong></td>
+                <td>Structured</td>
+                <td>Embedding</td>
+                <td>Multi-hop</td>
+                <td>Trainable</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Experiments Section -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Experiments</h2>
+        <div class="content has-text-justified">
+          <p>
+            We systematically evaluate the proposed design space across three representative routers — SimRouter, MLPRouter, and GraphRouter — under both standard routing and new-LLM generalization (cold-start) settings.
+            Experiments are designed to answer three research questions:
+          </p>
+        </div>
+
+        <!-- RQ1 -->
+        <div class="content has-text-justified" style="margin-top: 2rem;">
+          <h3 class="title is-4">RQ1: Is routing quality limited by how candidate LLMs are profiled, rather than by router choice alone?</h3>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <img src="./static/figs/RQ1_1.png" alt="RQ1 routing performance table" width="700px"/>
+          <p style="margin-top: 0.5rem;">Routing performance across different profile designs (RQ1). Structured profiles consistently outperform flat ones across all routers.</p>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <img src="./static/figs/RQ1_2.png" alt="RQ1 aggregation hop effect" width="700px"/>
+          <p style="margin-top: 0.5rem;">Effect of aggregation hop on routing performance. Depth helps overall, but its value depends on the profile design and router.</p>
+        </div>
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p>
+            <b>Routing performance depends strongly on how candidate models are profiled.</b>
+            Structured profiles consistently outperform flat baselines across all three routers for both text-based and embedding-based representations, demonstrating that routing quality is constrained not only by the router mechanism, but also by the quality of the LLM profiles themselves.
+          </p>
+          <p>
+            <b>The effect of aggregation depth depends on profile design and router.</b>
+            In the training-free setting, increasing aggregation hops generally improves performance across both text-based and embedding-based profiles.
+            However, in the trainable setting, additional hops benefit SimRouter while degrading performance in MLPRouter and GraphRouter — an effect we attribute to over-smoothing, which is more pronounced in discriminative routing contexts.
+          </p>
+        </div>
+
+        <!-- RQ2 -->
+        <div class="content has-text-justified" style="margin-top: 2rem;">
+          <h3 class="title is-4">RQ2: Which data sources truly improve LLM profiles and which instead introduce noise?</h3>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <img src="./static/figs/RQ2.png" alt="RQ2 data source effect" width="700px"/>
+          <p style="margin-top: 0.5rem;">Effect of data source on routing performance (RQ2). Query-level signal is a more reliable source than domain-level signal.</p>
+        </div>
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p>
+            <b>Query-level signal is a more reliable source than domain-level signal.</b>
+            Including query-level nodes yields more consistent improvements across all profile configurations and routers.
+            The strongest results for both Text-GNN and Emb-GNN are achieved when task and query signals are combined, confirming that fine-grained interaction signals are more informative than coarse domain summaries.
+          </p>
+          <p>
+            <b>Domain evidence is not a stable gain source.</b>
+            Adding domain nodes does not reliably improve routing and can even weaken otherwise strong profiles, suggesting that coarse-grained domain information is harder to integrate effectively and may introduce noise rather than useful discrimination.
+          </p>
+        </div>
+
+        <!-- RQ3 -->
+        <div class="content has-text-justified" style="margin-top: 2rem;">
+          <h3 class="title is-4">RQ3: How do different profile designs generalize to newly introduced models under cold-start conditions?</h3>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <img src="./static/figs/RQ3.png" alt="RQ3 cold-start generalization" width="700px"/>
+          <p style="margin-top: 0.5rem;">Routing performance under new-LLM (cold-start) setting (RQ3). Trainable GNNs achieve the strongest cold-start performance across routers.</p>
+        </div>
+        <div class="content has-text-justified" style="margin-bottom: 2rem;">
+          <p>
+            <b>Generalization to new LLMs requires structured and trainable profiles.</b>
+            Flat profiles yield near-zero cold-start performance across all routers, indicating that without relational structure, profiles fail to generalize to unseen models.
+            Structured profiles outperform flat baselines on both average and cold-start performance, and trainable configurations further amplify this advantage — achieving substantially higher cold-start scores that are critical for new-model generalization.
+          </p>
+          <p>
+            <b>Generalization depends on profile–router co-design.</b>
+            Cold-start gains are not realized uniformly across routers: GraphRouter achieves the strongest overall cold-start performance, while different structured profile families interact differently with SimRouter and MLPRouter.
+            This suggests that effective routing on newly introduced models depends not only on having stronger profiles, but also on pairing them with routers that can exploit those profiles effectively.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{RouteProfile,
+  author    = {Jingjun Xu and Hongji Pu and Tao Feng and Haozhen Zhang and Jiaxuan You and Ge Liu},
+  title     = {RouteProfile: Elucidating the Design Space of LLM Profiles for Routing},
+  journal   = {arXiv preprint},
+  year      = {2025},
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link" href="https://arxiv.org/abs/placeholder">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/ulab-uiuc/RouteProfile" class="external-link">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Acknowledgement: this website is based on the template from <a
+            href="https://github.com/nerfies/nerfies.github.io">here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
