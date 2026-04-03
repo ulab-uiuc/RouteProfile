@@ -3,7 +3,7 @@
 # Step 2: Build Data Graphs
 # =============================================================================
 # Constructs all heterogeneous PyG graphs from profile_data/ JSON files.
-# Outputs are saved to profile_data/result_data_graph/{mode}/.
+# Outputs are saved to results/result_data_graph/{mode}/.
 #
 # Usage:
 #   bash routeprofile/scripts/step2_build_data_graph.sh [MODE]
@@ -20,11 +20,11 @@
 #   bash routeprofile/scripts/step2_build_data_graph.sh both
 #
 # Output graphs (per mode):
-#   profile_data/result_data_graph/{mode}/task_graph_full.pt
-#   profile_data/result_data_graph/{mode}/query_graph_full.pt
-#   profile_data/result_data_graph/{mode}/query_task_graph_full.pt
-#   profile_data/result_data_graph/{mode}/task_domain_graph_full.pt
-#   profile_data/result_data_graph/{mode}/query_task_domain_graph_full.pt
+#   results/result_data_graph/{mode}/task_graph_full.pt
+#   results/result_data_graph/{mode}/query_graph_full.pt
+#   results/result_data_graph/{mode}/query_task_graph_full.pt
+#   results/result_data_graph/{mode}/task_domain_graph_full.pt
+#   results/result_data_graph/{mode}/query_task_domain_graph_full.pt
 # =============================================================================
 
 set -e
@@ -60,7 +60,7 @@ build_for_mode() {
 
     echo ""
     echo "✅ All graphs for mode '${mode}' saved to:"
-    echo "   ${PROJECT_ROOT}/profile_data/result_data_graph/${mode}/"
+    echo "   ${PROJECT_ROOT}/results/result_data_graph/${mode}/"
 }
 
 if [ "${MODE}" = "both" ]; then

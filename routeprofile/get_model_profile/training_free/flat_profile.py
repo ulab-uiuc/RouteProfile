@@ -139,14 +139,69 @@ def random_text_embed(
     return {name: emb_matrix[i] for i, name in enumerate(target_names)}
 
 
+# ── Python API ────────────────────────────────────────────────────────────────
+
+def build_model_profile(
+    mode:       str            = "standard",
+    graph:      str | None     = None,
+    save:       str | None     = None,
+    top_k:      int            = DEFAULT_TOP_K,
+    seed:       int            = DEFAULT_SEED,
+    batch_size: int            = 32,
+    keep:       list | None    = None,
+) -> dict:
+    """
+    Build flat model profile embeddings by random-sampling neighbour texts.
+
+    Args:
+        mode       : "standard" or "newllm" — selects default graph/save paths
+        graph      : path to HeteroData .pt file (None → auto from mode)
+        save       : output .npz path           (None → auto from mode)
+        top_k      : nodes to randomly sample per node type (default 5)
+        seed       : random seed (default 42)
+        batch_size : Longformer batch size (default 32)
+        keep       : model names to save; None → DEFAULT_KEEP_MODELS; [] → all
+
+    Returns:
+        dict { model_name: np.ndarray [768] }
+    """
+    ROOT_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    _PD       = os.path.join(ROOT_DIR, "profile_data")
+    _RESULTS  = os.path.join(ROOT_DIR, "results")
+
+    graph_path = graph or os.path.join(_RESULTS, "result_data_graph", mode, "task_graph_full.pt")
+    _save_dir  = os.path.join(_RESULTS, "model_profile_result", mode)
+    os.makedirs(_save_dir, exist_ok=True)
+    save_path  = save or os.path.join(_save_dir, "flat.npz")
+
+    keep_names: list | None
+    if keep is None:
+        keep_names = DEFAULT_KEEP_MODELS
+    elif len(keep) == 0:
+        keep_names = None
+    else:
+        keep_names = keep
+
+    print(f"Loading graph from '{graph_path}' ...")
+    data = torch.load(graph_path, weights_only=False)
+    print(data)
+
+    embeddings = random_text_embed(
+        data=data,
+        top_k=top_k,
+        seed=seed,
+        keep_names=keep_names,
+        batch_size=batch_size,
+    )
+
+    np.savez(save_path, **embeddings)
+    print(f"\n✅ Saved {len(embeddings)} embeddings → '{save_path}'")
+    return embeddings
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
-def main() -> None:
-    import os
-    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    _PD = os.path.join(ROOT_DIR, "profile_data")
-    _PR = os.path.join(ROOT_DIR, "routeprofile")
-
+def cli() -> None:
     parser = argparse.ArgumentParser(
         description="Random-sampled plain-text model profile embeddings."
     )
@@ -168,36 +223,16 @@ def main() -> None:
                              "Omit = DEFAULT_KEEP_MODELS; --keep with no args = all.")
     args = parser.parse_args()
 
-    _graph_default = os.path.join(_PD, "result_data_graph", args.mode, "task_graph_full.pt")
-    _save_dir = os.path.join(_PR, "model_profile_result", args.mode)
-    os.makedirs(_save_dir, exist_ok=True)
-    _save_default = os.path.join(_save_dir, "flat.npz")
-
-    if args.keep is None:
-        keep = DEFAULT_KEEP_MODELS
-    elif len(args.keep) == 0:
-        keep = None
-    else:
-        keep = args.keep
-
-    graph_path = args.graph or _graph_default
-    save_path  = args.save  or _save_default
-
-    print(f"Loading graph from '{graph_path}' ...")
-    data = torch.load(graph_path, weights_only=False)
-    print(data)
-
-    embeddings = random_text_embed(
-        data=data,
+    build_model_profile(
+        mode=args.mode,
+        graph=args.graph,
+        save=args.save,
         top_k=args.top_k,
         seed=args.seed,
-        keep_names=keep,
         batch_size=args.batch_size,
+        keep=args.keep,
     )
-
-    np.savez(save_path, **embeddings)
-    print(f"\n✅ Saved {len(embeddings)} embeddings → '{save_path}'")
 
 
 if __name__ == "__main__":
-    main()
+    cli()

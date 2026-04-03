@@ -95,7 +95,7 @@ def _format_query_text(
     return original_query
 
 
-class EmbeddingSimRouter(MetaRouter):
+class SimRouter(MetaRouter):
     """
     Offline training-free router.
 
@@ -313,75 +313,56 @@ class EmbeddingSimRouter(MetaRouter):
         return query_data_output
 
 
-# ── Main ───────────────────────────────────────────────────────────────────────
+# ── Python API ────────────────────────────────────────────────────────────────
 
-def main():
-    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    _PR = os.path.join(ROOT_DIR, "routeprofile")
-    _RD = os.path.join(ROOT_DIR, "route_data")
+def call_simrouter(
+    mode:               str       = "standard",
+    routing_data_path:  str | None = None,
+    model_profile_path: str | None = None,
+    output_path:        str | None = None,
+    yaml_path:          str | None = None,
+) -> dict:
+    """
+    Run the SimRouter offline routing pipeline end-to-end.
 
-    parser = argparse.ArgumentParser(
-        description="Offline EmbeddingSimRouter: route queries using pre-computed responses."
-    )
-    parser.add_argument("--mode", choices=["standard", "newllm"], default="standard",
-                        help="Routing setting: standard or newllm (default: standard)")
-    parser.add_argument(
-        "--yaml_path",
-        type=str,
-        default=None,
-        help="Path to the YAML config file (optional)",
-    )
-    parser.add_argument(
-        "--routing_data_path",
-        type=str,
-        default=None,
-        help="Path to routing_test_data.json (default: route_data/routing_test_data.json)",
-    )
-    parser.add_argument(
-        "--output_path",
-        type=str,
-        default=None,
-        help="Path to save the routing output JSON "
-             "(default: routeprofile/routing_result/{mode}/SimRouter_results.json)",
-    )
-    parser.add_argument(
-        "--model_embeddings_path",
-        type=str,
-        default=None,
-        help="Path to the .npz file containing model embeddings "
-             "(default: routeprofile/model_profile_result/{mode}/flat.npz)",
-    )
-    args = parser.parse_args()
+    Args:
+        mode               : "standard" or "newllm" — selects default paths
+        routing_data_path  : path to routing_test_data.json (None → auto)
+        model_profile_path : path to model embeddings .npz (None → auto)
+        output_path        : path to save results JSON (None → auto)
+        yaml_path          : optional YAML config for MetaRouter base class
 
-    # ── resolve default paths ──────────────────────────────────────────────────
-    routing_data_path    = args.routing_data_path    or os.path.join(_RD, "routing_test_data.json")
-    model_embeddings_path = args.model_embeddings_path or os.path.join(_PR, "model_profile_result", args.mode, "flat.npz")
-    _result_dir          = os.path.join(_PR, "routing_result", args.mode)
+    Returns:
+        dict with "avg_performance", "total_avg_hit", "performance_summary",
+        and "routing_results".
+    """
+    ROOT_DIR    = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    _RD         = os.path.join(ROOT_DIR, "route_data")
+    _RESULTS    = os.path.join(ROOT_DIR, "results")
+    _result_dir = os.path.join(_RESULTS, "routing_result", mode)
     os.makedirs(_result_dir, exist_ok=True)
-    output_path          = args.output_path or os.path.join(_result_dir, "SimRouter_results.json")
 
-    # ── validate required paths ────────────────────────────────────────────────
+    routing_data_path  = routing_data_path  or os.path.join(_RD, "routing_test_data.json")
+    model_profile_path = model_profile_path or os.path.join(_RESULTS, "model_profile_result", mode, "flat.npz")
+    output_path        = output_path        or os.path.join(_result_dir, "SimRouter_results.json")
+
     if not os.path.exists(routing_data_path):
         raise FileNotFoundError(f"routing_test_data not found: '{routing_data_path}'")
-    if not os.path.exists(model_embeddings_path):
-        raise FileNotFoundError(f"model embeddings not found: '{model_embeddings_path}'")
+    if not os.path.exists(model_profile_path):
+        raise FileNotFoundError(f"model profile not found: '{model_profile_path}'")
 
-    # ── load pre-computed routing data ─────────────────────────────────────────
     print(f"Loading routing data from: '{routing_data_path}' ...")
     with open(routing_data_path, "r", encoding="utf-8") as f:
         routing_data: list[dict] = json.load(f)
     print(f"  {len(routing_data)} queries loaded.")
 
-    # ── initialise router ──────────────────────────────────────────────────────
-    print(f"\nInitialising EmbeddingSimRouter ...")
-    router = EmbeddingSimRouter(args.yaml_path, model_embeddings_path)
+    print(f"\nInitialising SimRouter ...")
+    router = SimRouter(yaml_path, model_profile_path)
     print("✅ Router initialised.")
 
-    # ── run offline routing ────────────────────────────────────────────────────
     print("\nRouting queries (no API calls) ...")
     routing_result = router.route_batch(batch=routing_data)
 
-    # ── compute performance summary ────────────────────────────────────────────
     performance_summary: dict[str, list[float]] = {}
     hit_summary:         dict[str, list[bool]]  = {}
     for item in routing_result:
@@ -405,19 +386,16 @@ def main():
         hit_str = f"  avg_hit={avg_hit:.4f}" if avg_hit is not None else ""
         print(f"  📊 {task}: {avg:.4f}  (n={len(perfs)}){hit_str}")
 
-    # ── top-level aggregate metrics (not inside performance_summary) ───────────
     all_perfs_flat  = [p for perfs in performance_summary.values() for p in perfs]
     avg_performance = sum(all_perfs_flat) / len(all_perfs_flat) if all_perfs_flat else None
-
-    all_hits_flat = [h for hits in hit_summary.values() for h in hits]
-    total_avg_hit = sum(all_hits_flat) / len(all_hits_flat) if all_hits_flat else None
+    all_hits_flat   = [h for hits in hit_summary.values() for h in hits]
+    total_avg_hit   = sum(all_hits_flat) / len(all_hits_flat) if all_hits_flat else None
 
     if avg_performance is not None:
         print(f"  📊 avg_performance : {avg_performance:.4f}  (n={len(all_perfs_flat)})")
     if total_avg_hit is not None:
         print(f"  📊 total_avg_hit   : {total_avg_hit:.4f}  (n={len(all_hits_flat)})")
 
-    # ── save results ───────────────────────────────────────────────────────────
     result = {
         "avg_performance": avg_performance,
         "total_avg_hit":   total_avg_hit,
@@ -427,11 +405,44 @@ def main():
         },
         "routing_results": routing_result,
     }
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
     print(f"\n💾 Results saved to: '{output_path}'")
+    return result
+
+
+# ── CLI ────────────────────────────────────────────────────────────────────────
+
+def cli():
+    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+    parser = argparse.ArgumentParser(
+        description="Offline SimRouter: route queries using pre-computed responses."
+    )
+    parser.add_argument("--mode", choices=["standard", "newllm"], default="standard",
+                        help="Routing setting: standard or newllm (default: standard)")
+    parser.add_argument("--yaml_path",          type=str, default=None,
+                        help="Path to the YAML config file (optional)")
+    parser.add_argument("--routing_data_path",  type=str, default=None,
+                        help="Path to routing_test_data.json "
+                             "(default: route_data/routing_test_data.json)")
+    parser.add_argument("--output_path",        type=str, default=None,
+                        help="Path to save the routing output JSON "
+                             "(default: routeprofile/routing_result/{mode}/SimRouter_results.json)")
+    parser.add_argument("--model_profile_path", type=str, default=None,
+                        help="Path to model profile .npz "
+                             "(default: routeprofile/model_profile_result/{mode}/flat.npz)")
+    args = parser.parse_args()
+
+    call_simrouter(
+        mode=args.mode,
+        routing_data_path=args.routing_data_path,
+        model_profile_path=args.model_profile_path,
+        output_path=args.output_path,
+        yaml_path=args.yaml_path,
+    )
 
 
 if __name__ == "__main__":
-    main()
+    cli()

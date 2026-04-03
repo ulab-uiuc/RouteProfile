@@ -42,7 +42,6 @@ import torch.nn.functional as F
 from dataclasses import dataclass, field
 from torch import Tensor
 from torch_geometric.data import HeteroData
-from vllm import LLM, SamplingParams
 from llmrouter.utils import get_longformer_embedding
  
  
@@ -1061,8 +1060,8 @@ def _collect_neighbours(
  
 def _run_vllm_batch(
     prompts:        list[str],
-    llm:            LLM,
-    sampling_params: SamplingParams,
+    llm:            "LLM",
+    sampling_params: "SamplingParams",
 ) -> list[str]:
     """
     Run a batch of prompts through vLLM and return the generated texts.
@@ -1120,8 +1119,8 @@ def _text_propagate_single_call(
     data:            HeteroData,
     node_texts:      dict[str, list[str]],
     model_names:     list[str],
-    llm:             LLM,
-    sampling_params: SamplingParams,
+    llm:             "LLM",
+    sampling_params: "SamplingParams",
     top_k:           int = 5,
     hop_depth:       int = 1,
 ) -> dict[str, list[str]]:
@@ -1275,14 +1274,15 @@ TARGET_MODELS: list[str] = [
  
  
 def text_propagate(
-    data:                 HeteroData,
-    K:                    int   = 1,
-    vllm_model:           str   = DEFAULT_VLLM_MODEL,
-    max_new_tokens:       int   = DEFAULT_MAX_NEW_TOKENS,
-    temperature:          float = 0.1,
-    tensor_parallel_size: int   = 1,
-    top_k:                int   = 5,
-    keep_names:           list[str] | None = TARGET_MODELS,
+    data:                   HeteroData,
+    K:                      int   = 1,
+    vllm_model:             str   = DEFAULT_VLLM_MODEL,
+    max_new_tokens:         int   = DEFAULT_MAX_NEW_TOKENS,
+    temperature:            float = 0.1,
+    tensor_parallel_size:   int   = 1,
+    gpu_memory_utilization: float = 0.9,
+    top_k:                  int   = 5,
+    keep_names:             list[str] | None = TARGET_MODELS,
 ) -> TextGNNOutput:
     """
     Run K hops of Text-GNN aggregation using an LLM as the aggregate function.
@@ -1338,10 +1338,12 @@ def text_propagate(
         print("\n── K=0: skipping LLM aggregation, using raw node_feature_text ──")
     else:
         # ── initialise vLLM ────────────────────────────────────────────────
+        from vllm import LLM, SamplingParams  # lazy import — vllm is optional
         print(f"\n── Initialising vLLM  model='{vllm_model}' ────────────")
         llm = LLM(
             model=vllm_model,
             tensor_parallel_size=tensor_parallel_size,
+            gpu_memory_utilization=gpu_memory_utilization,
             trust_remote_code=True,
         )
         sampling_params = SamplingParams(
@@ -1492,57 +1494,84 @@ def print_output_summary(output: TextGNNOutput) -> None:
         print(f"    {text[:120].replace(chr(10), ' ')}...")
  
  
-# ── Main ──────────────────────────────────────────────────────────────────────
- 
-def main(
-    graph_path:           str   = "llm_hetero_graph.pt",
-    K:                    int   = 1,
-    vllm_model:           str   = DEFAULT_VLLM_MODEL,
-    max_new_tokens:       int   = DEFAULT_MAX_NEW_TOKENS,
-    temperature:          float = 0.1,
-    tensor_parallel_size: int   = 1,
-    emb_save_path:        str   = "text_gnn_embeddings.npz",
-    text_save_path:       str   = "text_gnn_texts.json",
+# ── Python API ────────────────────────────────────────────────────────────────
+
+def build_model_profile(
+    mode:                   str        = "standard",
+    graph:                  str | None = None,
+    K:                      int        = 4,
+    model:                  str        = DEFAULT_VLLM_MODEL,
+    max_tokens:             int        = DEFAULT_MAX_NEW_TOKENS,
+    temperature:            float      = 0.0,
+    tp:                     int        = 1,
+    gpu_memory_utilization: float      = 0.9,
+    emb_save:               str | None = None,
+    text_save:              str | None = None,
+    keep:                   list[str] | None = None,
 ) -> None:
     """
     End-to-end Text-GNN pipeline:
-      load graph → run K-hop LLM aggregation → BERT encode → save outputs.
- 
-    When K=0, no LLM is initialised; the raw node_feature_text of each model
-    node is encoded directly by BERT and returned as the embedding baseline.
+      load graph → run K-hop LLM aggregation → Longformer encode → save outputs.
+
+    Args:
+        mode                   : "standard" or "newllm" — selects default graph/save paths
+        graph                  : path to HeteroData .pt file (None → auto from mode)
+        K                      : number of Text-GNN hops (0 = Longformer-only baseline)
+        model                  : vLLM model ID for LLM aggregation
+        max_tokens             : max new tokens per LLM call
+        temperature            : LLM sampling temperature
+        tp                     : tensor parallel size (number of GPUs)
+        gpu_memory_utilization : fraction of GPU memory vLLM may use (default 0.9)
+        emb_save               : output .npz path for embeddings (None → auto from mode)
+        text_save              : output .json path for texts     (None → auto from mode)
+        keep                   : model names to save. None → TARGET_MODELS;
+                                 [] → all models in the graph
     """
+    import os
+    ROOT_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    _PD       = os.path.join(ROOT_DIR, "profile_data")
+    _RESULTS  = os.path.join(ROOT_DIR, "results")
+    _save_dir = os.path.join(_RESULTS, "model_profile_result", mode)
+    os.makedirs(_save_dir, exist_ok=True)
+
+    graph_path     = graph    or os.path.join(_RESULTS, "result_data_graph", mode, "query_task_domain_graph_full.pt")
+    emb_save_path  = emb_save  or os.path.join(_save_dir, "text_gnn.npz")
+    text_save_path = text_save or os.path.join(_save_dir, "text_gnn_texts.json")
+
     # 1. Load graph
     print(f"── Step 1: Load graph from '{graph_path}' ────────────────")
     data = torch.load(graph_path, weights_only=False)
     print(data)
- 
+
     # 2. Run Text-GNN
-    print(f"\n── Step 2: Text-GNN  K={K}  model='{vllm_model}' ───────")
+    print(f"\n── Step 2: Text-GNN  K={K}  model='{model}' ───────")
+    keep_names = TARGET_MODELS if keep is None else (None if keep == [] else keep)
     output = text_propagate(
         data=data,
         K=K,
-        vllm_model=vllm_model,
-        max_new_tokens=max_new_tokens,
+        vllm_model=model,
+        max_new_tokens=max_tokens,
         temperature=temperature,
-        tensor_parallel_size=tensor_parallel_size,
+        tensor_parallel_size=tp,
+        gpu_memory_utilization=gpu_memory_utilization,
+        keep_names=keep_names,
     )
- 
+
     # 3. Summary
     print_output_summary(output)
- 
+
     # 4. Save
     print(f"\n── Step 3: Save outputs ──────────────────────────────────")
     save_output(output, emb_save_path, text_save_path)
- 
+
     print("\n✅ Done!")
 
-if __name__ == "__main__":
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def cli() -> None:
     import argparse
     import os
-
-    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    _PD = os.path.join(ROOT_DIR, "profile_data")
-    _PR = os.path.join(ROOT_DIR, "routeprofile")
 
     parser = argparse.ArgumentParser(description="Text-GNN with LLM aggregation.")
     parser.add_argument("--mode",        choices=["standard", "newllm"], default="standard",
@@ -1551,7 +1580,7 @@ if __name__ == "__main__":
                         help="Input .pt graph file "
                              "(default: profile_data/result_data_graph/{mode}/query_task_domain_graph_full.pt)")
     parser.add_argument("--K",           default=4, type=int,
-                        help="Number of Text-GNN hops (0 = BERT-only baseline, no LLM)")
+                        help="Number of Text-GNN hops (0 = Longformer-only baseline, no LLM)")
     parser.add_argument("--model",       default=DEFAULT_VLLM_MODEL,
                         help="vLLM model ID")
     parser.add_argument("--max-tokens",  default=DEFAULT_MAX_NEW_TOKENS, type=int,
@@ -1568,16 +1597,18 @@ if __name__ == "__main__":
                              "(default: routeprofile/model_profile_result/{mode}/text_gnn_texts.json)")
     args = parser.parse_args()
 
-    _save_dir = os.path.join(_PR, "model_profile_result", args.mode)
-    os.makedirs(_save_dir, exist_ok=True)
-
-    main(
-        graph_path=args.graph or os.path.join(_PD, "result_data_graph", args.mode, "query_task_domain_graph_full.pt"),
+    build_model_profile(
+        mode=args.mode,
+        graph=args.graph,
         K=args.K,
-        vllm_model=args.model,
-        max_new_tokens=args.max_tokens,
+        model=args.model,
+        max_tokens=args.max_tokens,
         temperature=args.temperature,
-        tensor_parallel_size=args.tp,
-        emb_save_path=args.emb_save or os.path.join(_save_dir, "text_gnn.npz"),
-        text_save_path=args.text_save or os.path.join(_save_dir, "text_gnn_texts.json"),
+        tp=args.tp,
+        emb_save=args.emb_save,
+        text_save=args.text_save,
     )
+
+
+if __name__ == "__main__":
+    cli()

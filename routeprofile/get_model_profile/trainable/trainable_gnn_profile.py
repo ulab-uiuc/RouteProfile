@@ -508,13 +508,88 @@ def train(
     print(f"\n✅ Pretraining complete!")
 
 
+# ── Python API ────────────────────────────────────────────────────────────────
+
+def build_model_profile(
+    mode:           str        = "standard",
+    graph:          str | None = None,
+    save_emb:       str | None = None,
+    save_ckpt:      str | None = None,
+    hidden_dim:     int        = DEFAULT_HIDDEN_DIM,
+    out_dim:        int        = DEFAULT_OUT_DIM,
+    heads:          int        = DEFAULT_HEADS,
+    num_layers:     int        = DEFAULT_NUM_LAYERS,
+    node_mask_rate: float      = DEFAULT_NODE_MASK_RATE,
+    edge_mask_rate: float      = DEFAULT_EDGE_MASK_RATE,
+    edge_loss_w:    float      = DEFAULT_EDGE_LOSS_W,
+    lr:             float      = DEFAULT_LR,
+    epochs:         int        = DEFAULT_EPOCHS,
+    seed:           int        = DEFAULT_SEED,
+    keep:           list | None = None,
+) -> None:
+    """
+    Train a HANConv encoder via self-supervised masked feature reconstruction
+    and save the resulting model profile embeddings.
+
+    Args:
+        mode           : "standard" or "newllm" — selects default graph/save paths
+        graph          : path to HeteroData .pt graph (None → auto from mode)
+        save_emb       : output .npz path for embeddings (None → auto from mode)
+        save_ckpt      : output .pt path for checkpoint  (None → auto from mode)
+        hidden_dim     : width of intermediate HANConv layers (default 256)
+        out_dim        : output embedding dim (default 768, must match Longformer)
+        heads          : attention heads in intermediate layers (default 4)
+        num_layers     : number of HANConv message-passing rounds (default 2)
+        node_mask_rate : fraction of node features to mask (default 0.30)
+        edge_mask_rate : fraction of edge scores to mask (default 0.30)
+        edge_loss_w    : weight for edge reconstruction loss (default 1.0)
+        lr             : initial AdamW learning rate (default 1e-4)
+        epochs         : training epochs (default 100)
+        seed           : random seed (default 42)
+        keep           : model names to save; None → DEFAULT_KEEP_MODELS; [] → all
+    """
+    import os
+    ROOT_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    _PD       = os.path.join(ROOT_DIR, "profile_data")
+    _RESULTS  = os.path.join(ROOT_DIR, "results")
+    _emb_dir  = os.path.join(_RESULTS, "model_profile_result", mode)
+    _ckpt_dir = os.path.join(_RESULTS, "trained_trainable_gnn", mode)
+    os.makedirs(_emb_dir,  exist_ok=True)
+    os.makedirs(_ckpt_dir, exist_ok=True)
+
+    graph_path     = graph    or os.path.join(_RESULTS, "result_data_graph", mode, "task_graph_full.pt")
+    save_emb_path  = save_emb  or os.path.join(_emb_dir,  "trainable_gnn.npz")
+    save_ckpt_path = save_ckpt or os.path.join(_ckpt_dir, "pretrain_ckpt.pt")
+
+    if keep is None:
+        keep_names = DEFAULT_KEEP_MODELS
+    elif len(keep) == 0:
+        keep_names = []
+    else:
+        keep_names = keep
+
+    train(
+        graph_path=graph_path,
+        save_emb_path=save_emb_path,
+        save_ckpt_path=save_ckpt_path,
+        hidden_dim=hidden_dim,
+        out_dim=out_dim,
+        heads=heads,
+        num_layers=num_layers,
+        node_mask_rate=node_mask_rate,
+        edge_mask_rate=edge_mask_rate,
+        edge_loss_w=edge_loss_w,
+        lr=lr,
+        epochs=epochs,
+        seed=seed,
+        keep_names=keep_names,
+    )
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
-def main() -> None:
+def cli() -> None:
     import os
-    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    _PD = os.path.join(ROOT_DIR, "profile_data")
-    _PR = os.path.join(ROOT_DIR, "routeprofile")
 
     parser = argparse.ArgumentParser(
         description="Self-supervised HANConv pretraining via masked feature reconstruction."
@@ -548,22 +623,11 @@ def main() -> None:
                              "--keep with no args = all.")
     args = parser.parse_args()
 
-    _emb_dir  = os.path.join(_PR, "model_profile_result", args.mode)
-    _ckpt_dir = os.path.join(_PR, "get_model_profile", "trainable", "trained_gnn", args.mode)
-    os.makedirs(_emb_dir,  exist_ok=True)
-    os.makedirs(_ckpt_dir, exist_ok=True)
-
-    if args.keep is None:
-        keep = DEFAULT_KEEP_MODELS
-    elif len(args.keep) == 0:
-        keep = []
-    else:
-        keep = args.keep
-
-    train(
-        graph_path=args.graph or os.path.join(_PD, "result_data_graph", args.mode, "task_graph_full.pt"),
-        save_emb_path=args.save_emb  or os.path.join(_emb_dir,  "trainable_gnn.npz"),
-        save_ckpt_path=args.save_ckpt or os.path.join(_ckpt_dir, "pretrain_ckpt.pt"),
+    build_model_profile(
+        mode=args.mode,
+        graph=args.graph,
+        save_emb=args.save_emb,
+        save_ckpt=args.save_ckpt,
         hidden_dim=args.hidden_dim,
         out_dim=args.out_dim,
         heads=args.heads,
@@ -574,9 +638,9 @@ def main() -> None:
         lr=args.lr,
         epochs=args.epochs,
         seed=args.seed,
-        keep_names=keep,
+        keep=args.keep,
     )
 
 
 if __name__ == "__main__":
-    main()
+    cli()

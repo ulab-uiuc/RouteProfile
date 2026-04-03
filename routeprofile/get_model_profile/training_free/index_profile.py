@@ -15,8 +15,8 @@ import os
 import numpy as np
 import torch
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-_PR = os.path.join(ROOT_DIR, "routeprofile")
+ROOT_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_RESULTS  = os.path.join(ROOT_DIR, "results")
 
 EMBEDDING_DIM = 768
 DEFAULT_SEED  = 56
@@ -33,7 +33,34 @@ TARGET_MODELS: list[str] = [
 ]
 
 
-def main() -> None:
+def build_model_profile(
+    mode: str       = "standard",
+    save: str | None = None,
+    seed: int       = DEFAULT_SEED,
+) -> None:
+    """
+    Generate random unit-vector baseline profiles for all candidate models.
+
+    Args:
+        mode : "standard" or "newllm" — selects default save path
+        save : output .npz path (None → auto from mode)
+        seed : random seed (default 56)
+    """
+    _save_dir = os.path.join(_RESULTS, "model_profile_result", mode)
+    os.makedirs(_save_dir, exist_ok=True)
+    save_path = save or os.path.join(_save_dir, "index.npz")
+
+    torch.manual_seed(seed)
+    model_vecs = {
+        name: torch.randn(EMBEDDING_DIM, dtype=torch.float32)
+        for name in TARGET_MODELS
+    }
+
+    np.savez(save_path, **{k: v.numpy() for k, v in model_vecs.items()})
+    print(f"✅ Saved {len(model_vecs)} random embeddings (dim={EMBEDDING_DIM}) → '{save_path}'")
+
+
+def cli() -> None:
     parser = argparse.ArgumentParser(
         description="Random-vector index profile (baseline for LLM routing)."
     )
@@ -45,20 +72,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED,
                         help=f"Random seed (default {DEFAULT_SEED})")
     args = parser.parse_args()
-
-    _save_dir = os.path.join(_PR, "model_profile_result", args.mode)
-    os.makedirs(_save_dir, exist_ok=True)
-    save_path = args.save or os.path.join(_save_dir, "index.npz")
-
-    torch.manual_seed(args.seed)
-    model_vecs = {
-        name: torch.randn(EMBEDDING_DIM, dtype=torch.float32)
-        for name in TARGET_MODELS
-    }
-
-    np.savez(save_path, **{k: v.numpy() for k, v in model_vecs.items()})
-    print(f"✅ Saved {len(model_vecs)} random embeddings (dim={EMBEDDING_DIM}) → '{save_path}'")
+    build_model_profile(mode=args.mode, save=args.save, seed=args.seed)
 
 
 if __name__ == "__main__":
-    main()
+    cli()

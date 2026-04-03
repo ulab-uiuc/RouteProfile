@@ -36,13 +36,13 @@
 #   bash routeprofile/scripts/step3b_trainable_profile.sh standard
 #   bash routeprofile/scripts/step3b_trainable_profile.sh newllm --epochs 200
 #   bash routeprofile/scripts/step3b_trainable_profile.sh standard \
-#       --graph profile_data/result_data_graph/standard/task_domain_graph_full.pt \
+#       --graph results/result_data_graph/standard/task_domain_graph_full.pt \
 #       --hidden-dim 512 --heads 8 --num-layers 3 --epochs 200
 #
 # Outputs:
-#   routeprofile/model_profile_result/{mode}/trainable_gnn.npz
+#   results/model_profile_result/{mode}/trainable_gnn.npz
 #       Model profile embeddings (dim=768, compatible with all routers)
-#   routeprofile/get_model_profile/trainable/trained_gnn/{mode}/pretrain_ckpt.pt
+#   results/trained_trainable_gnn/{mode}/pretrain_ckpt.pt
 #       Full HANConv checkpoint (encoder + decoders + mask tokens)
 #
 # =============================================================================
@@ -52,7 +52,7 @@
 # ── Input graph ───────────────────────────────────────────────────────────────
 #
 #   --graph PATH         HeteroData .pt graph file to train on.
-#                        default: profile_data/result_data_graph/{mode}/task_graph_full.pt
+#                        default: results/result_data_graph/{mode}/task_graph_full.pt
 #
 #                        The graph choice determines both:
 #                          (a) which edge types the encoder attends over
@@ -170,7 +170,7 @@
 #                        Example: --keep qwen2.5-7b-instruct llama-3.1-8b-instruct
 #
 #   --save-emb PATH      Override output path for the model profile .npz.
-#                        default: routeprofile/model_profile_result/{mode}/trainable_gnn.npz
+#                        default: results/model_profile_result/{mode}/trainable_gnn.npz
 #
 #   --save-ckpt PATH     Override output path for the full training checkpoint.
 #                        default: routeprofile/get_model_profile/trainable/
@@ -204,5 +204,5 @@ python "${TRAINABLE_DIR}/trainable_gnn_profile.py" \
     "$@"
 
 echo ""
-echo "✅ Profile saved to : ${PROJECT_ROOT}/routeprofile/model_profile_result/${MODE}/trainable_gnn.npz"
-echo "✅ Checkpoint saved to: ${PROJECT_ROOT}/routeprofile/get_model_profile/trainable/trained_gnn/${MODE}/pretrain_ckpt.pt"
+echo "✅ Profile saved to : ${PROJECT_ROOT}/results/model_profile_result/${MODE}/trainable_gnn.npz"
+echo "✅ Checkpoint saved to: ${PROJECT_ROOT}/results/trained_trainable_gnn/${MODE}/pretrain_ckpt.pt"

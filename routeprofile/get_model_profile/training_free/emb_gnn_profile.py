@@ -350,26 +350,45 @@ TARGET_MODELS: list[str] | None = [
 ]
 
 
-def main(
-    graph_path:  str        = "llm_hetero_graph.pt",
-    K:           int        = 2,
-    norm:        str        = "sym",
-    normalize:   bool       = False,
-    save_path:   str        = "model_embeddings.npz",
-    keep_names:  list[str] | None = TARGET_MODELS,
+def build_model_profile(
+    mode:      str            = "standard",
+    graph:     str | None     = None,
+    K:         int            = 2,
+    norm:      str            = "sym",
+    normalize: bool           = False,
+    save:      str | None     = None,
+    keep:      list | None    = None,
 ) -> None:
     """
     Load a saved HeteroData graph, run K-hop propagation, and save model
     node embeddings as a { model_name: float32 array } .npz archive.
 
     Args:
-        graph_path  : path to the .pt file produced by build_llm_graph.py
-        K           : number of propagation hops
-        norm        : normalisation mode (sym | right | left | none)
-        normalize   : whether to L2-normalise output embeddings
-        save_path   : output .npz file for model node embeddings
-        keep_names  : list of model name keys to save (None = save all)
+        mode      : "standard" or "newllm" — selects default graph/save paths
+        graph     : path to the .pt graph file (None → auto from mode)
+        K         : number of propagation hops (default 2)
+        norm      : normalisation mode: sym | right | left | none (default sym)
+        normalize : whether to L2-normalise output embeddings
+        save      : output .npz path (None → auto from mode)
+        keep      : model names to save; None → TARGET_MODELS; [] → all
     """
+    import os
+    ROOT_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    _PD       = os.path.join(ROOT_DIR, "profile_data")
+    _RESULTS  = os.path.join(ROOT_DIR, "results")
+
+    graph_path = graph or os.path.join(_RESULTS, "result_data_graph", mode, "task_graph_full.pt")
+    _save_dir  = os.path.join(_RESULTS, "model_profile_result", mode)
+    os.makedirs(_save_dir, exist_ok=True)
+    save_path  = save or os.path.join(_save_dir, "emb_gnn.npz")
+
+    if keep is None:
+        keep_names = TARGET_MODELS
+    elif len(keep) == 0:
+        keep_names = None
+    else:
+        keep_names = keep
+
     # 1. Load graph
     print(f"── Step 1: Load graph from '{graph_path}' ────────────────")
     data = torch.load(graph_path, weights_only=False)
@@ -394,13 +413,10 @@ def main(
     print("\n✅ Done!")
 
 
-if __name__ == "__main__":
+def cli() -> None:
     import argparse
-
     import os
     ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    _PD = os.path.join(ROOT_DIR, "profile_data")
-    _PR = os.path.join(ROOT_DIR, "routeprofile")
 
     parser = argparse.ArgumentParser(description="Training-free heterogeneous GNN propagation.")
     parser.add_argument("--mode",      choices=["standard", "newllm"], default="standard",
@@ -422,27 +438,16 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    _graph_default = os.path.join(_PD, "result_data_graph", args.mode, "task_graph_full.pt")
-    _save_dir = os.path.join(_PR, "model_profile_result", args.mode)
-    os.makedirs(_save_dir, exist_ok=True)
-    _save_default = os.path.join(_save_dir, "emb_gnn.npz")
-
-    # resolve keep_names:
-    #   --keep not provided → use TARGET_MODELS constant
-    #   --keep (no args)    → None = save everything
-    #   --keep m1 m2        → save only those two
-    if args.keep is None:
-        keep = TARGET_MODELS
-    elif len(args.keep) == 0:
-        keep = None
-    else:
-        keep = args.keep
-
-    main(
-        graph_path=args.graph or _graph_default,
+    build_model_profile(
+        mode=args.mode,
+        graph=args.graph,
         K=args.K,
         norm=args.norm,
         normalize=args.normalize,
-        save_path=args.save or _save_default,
-        keep_names=keep,
+        save=args.save,
+        keep=args.keep,
     )
+
+
+if __name__ == "__main__":
+    cli()

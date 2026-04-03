@@ -39,8 +39,9 @@ from torch_geometric.data import HeteroData
 from llmrouter.utils import get_longformer_embedding
 
 # ── Project root (RouteProfile/) ──────────────────────────────────────────────
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-_PD = os.path.join(ROOT_DIR, "profile_data")
+ROOT_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+_PD       = os.path.join(ROOT_DIR, "profile_data")
+_RESULTS  = os.path.join(ROOT_DIR, "results")
 
 # ── Default paths (standard mode; override with --mode newllm) ────────────────
 DEFAULT_DOMAIN_MAP_JSON  = os.path.join(_PD, "domain_task_map.json")
@@ -48,7 +49,7 @@ DEFAULT_DOMAIN_FEAT_JSON = os.path.join(_PD, "domain_feature.json")
 DEFAULT_JSON             = os.path.join(_PD, "model_feature_standard.json")
 DEFAULT_ARCH_JSON        = os.path.join(_PD, "model_family_feature.json")
 DEFAULT_DATASET_JSON     = os.path.join(_PD, "task_feature.json")
-DEFAULT_SAVE_PT          = os.path.join(_PD, "result_data_graph", "standard", "task_domain_graph_full.pt")
+DEFAULT_SAVE_PT          = os.path.join(_RESULTS, "result_data_graph", "standard", "task_domain_graph_full.pt")
 
 
 # ── 1. Data loading ────────────────────────────────────────────────────────────
@@ -549,7 +550,40 @@ def main(
     print("\n✅ Done!")
 
 
-if __name__ == "__main__":
+def build_task_domain_graph(
+    mode:        str        = "standard",
+    json:        str | None = None,
+    arch:        str | None = None,
+    dataset:     str | None = None,
+    domain_map:  str | None = None,
+    domain_feat: str | None = None,
+    save:        str | None = None,
+) -> None:
+    """
+    Build the task-domain graph (architecture / model / dataset / domain nodes).
+
+    Args:
+        mode        : "standard" or "newllm"
+        json        : path to model feature JSON (None → auto)
+        arch        : path to architecture feature JSON (None → shared default)
+        dataset     : path to dataset feature JSON (None → shared default)
+        domain_map  : path to domain→dataset map JSON (None → shared default)
+        domain_feat : path to domain feature JSON (None → shared default)
+        save        : output .pt path (None → auto)
+    """
+    _out_dir = os.path.join(_RESULTS, "result_data_graph", mode)
+    os.makedirs(_out_dir, exist_ok=True)
+    main(
+        json_path=json          or os.path.join(_PD, f"model_feature_{mode}.json"),
+        arch_path=arch          or os.path.join(_PD, "model_family_feature.json"),
+        dataset_path=dataset    or os.path.join(_PD, "task_feature.json"),
+        domain_map_path=domain_map  or os.path.join(_PD, "domain_task_map.json"),
+        domain_feat_path=domain_feat or os.path.join(_PD, "domain_feature.json"),
+        save_path=save          or os.path.join(_out_dir, "task_domain_graph_full.pt"),
+    )
+
+
+def cli() -> None:
     parser = argparse.ArgumentParser(
         description="Build task-domain graph (architecture/model/dataset/domain) for RouteProfile."
     )
@@ -568,16 +602,10 @@ if __name__ == "__main__":
     parser.add_argument("--save",        default=None, metavar="PATH",
                         help="Override output .pt path")
     _args = parser.parse_args()
+    build_task_domain_graph(mode=_args.mode, json=_args.json, arch=_args.arch,
+                            dataset=_args.dataset, domain_map=_args.domain_map,
+                            domain_feat=_args.domain_feat, save=_args.save)
 
-    _out_dir          = os.path.join(_PD, "result_data_graph", _args.mode)
-    os.makedirs(_out_dir, exist_ok=True)
 
-    _json_path        = _args.json        or os.path.join(_PD, f"model_feature_{_args.mode}.json")
-    _arch_path        = _args.arch        or os.path.join(_PD, "model_family_feature.json")
-    _dataset_path     = _args.dataset     or os.path.join(_PD, "task_feature.json")
-    _domain_map_path  = _args.domain_map  or os.path.join(_PD, "domain_task_map.json")
-    _domain_feat_path = _args.domain_feat or os.path.join(_PD, "domain_feature.json")
-    _save_path        = _args.save        or os.path.join(_out_dir, "task_domain_graph_full.pt")
-
-    main(_json_path, _arch_path, _dataset_path,
-         _domain_map_path, _domain_feat_path, _save_path)
+if __name__ == "__main__":
+    cli()

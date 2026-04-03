@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "routeprofile"
+version = "0.1.0"
+description = "Heterogeneous graph-based LLM profiles for routing — design space exploration"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+keywords = ["llm", "routing", "graph neural network", "model selection", "nlp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.1.0",
+    "torch_geometric>=2.4.0",
+    "transformers>=4.35.0",
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
+    "pyyaml>=6.0",
+    "llmrouter-lib",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/RouteProfile"
+Repository = "https://github.com/your-org/RouteProfile"
+Issues = "https://github.com/your-org/RouteProfile/issues"
+
+[project.optional-dependencies]
+text-gnn = ["vllm>=0.3.0"]
+dev = ["pytest>=7.0", "build", "twine"]
+
+[project.scripts]
+routeprofile-build-task-graph              = "routeprofile.build_data_graph.build_task_graph:cli"
+routeprofile-build-query-graph             = "routeprofile.build_data_graph.build_query_graph:cli"
+routeprofile-build-query-task-graph        = "routeprofile.build_data_graph.build_query_task_graph:cli"
+routeprofile-build-task-domain-graph       = "routeprofile.build_data_graph.build_task_domain_graph:cli"
+routeprofile-build-query-task-domain-graph = "routeprofile.build_data_graph.build_query_task_domain_graph:cli"
+routeprofile-flat-profile                  = "routeprofile.get_model_profile.training_free.flat_profile:cli"
+routeprofile-emb-gnn-profile               = "routeprofile.get_model_profile.training_free.emb_gnn_profile:cli"
+routeprofile-index-profile                 = "routeprofile.get_model_profile.training_free.index_profile:cli"
+routeprofile-trainable-gnn-profile         = "routeprofile.get_model_profile.trainable.trainable_gnn_profile:cli"
+routeprofile-sim-router                    = "routeprofile.routing_evaluation.SimRouter:cli"
+routeprofile-mlp-router                    = "routeprofile.routing_evaluation.MLPRouter:cli"
+routeprofile-graph-router                  = "routeprofile.routing_evaluation.GraphRouter:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["routeprofile*"]
+
+[tool.setuptools.package-data]
+routeprofile = ["scripts/*.sh"]

@@ -3,8 +3,8 @@
 # Step 3a: Training-Free Model Profiles
 # =============================================================================
 # Generates model profile embeddings using training-free methods.
-# Reads heterogeneous graphs from profile_data/result_data_graph/{mode}/ and
-# writes .npz embedding files to routeprofile/model_profile_result/{mode}/.
+# Reads heterogeneous graphs from results/result_data_graph/{mode}/ and
+# writes .npz embedding files to results/model_profile_result/{mode}/.
 #
 # Four methods are available, each producing a different kind of profile:
 #
@@ -45,10 +45,10 @@
 #   bash routeprofile/scripts/step3a_training_free_profile.sh standard text_gnn --K 2 --tp 2
 #
 # Output (.npz files per mode):
-#   routeprofile/model_profile_result/{mode}/flat.npz
-#   routeprofile/model_profile_result/{mode}/index.npz
-#   routeprofile/model_profile_result/{mode}/emb_gnn.npz
-#   routeprofile/model_profile_result/{mode}/text_gnn.npz  (text_gnn only)
+#   results/model_profile_result/{mode}/flat.npz
+#   results/model_profile_result/{mode}/index.npz
+#   results/model_profile_result/{mode}/emb_gnn.npz
+#   results/model_profile_result/{mode}/text_gnn.npz  (text_gnn only)
 #
 # =============================================================================
 # Per-Method Parameter Reference
@@ -57,7 +57,7 @@
 # ── flat (flat_profile.py) ────────────────────────────────────────────────────
 #
 #   --graph PATH         Input HeteroData graph .pt file.
-#                        default: profile_data/result_data_graph/{mode}/task_graph_full.pt
+#                        default: results/result_data_graph/{mode}/task_graph_full.pt
 #                        Tip: use a graph with more node types (e.g. task_domain_graph_full.pt
 #                        or query_task_domain_graph_full.pt) to include richer neighbour
 #                        context (domain descriptions, example queries) in the concatenated text.
@@ -74,7 +74,7 @@
 #                        default: 32  (reduce if OOM)
 #
 #   --save PATH          Override output .npz path.
-#                        default: routeprofile/model_profile_result/{mode}/flat.npz
+#                        default: results/model_profile_result/{mode}/flat.npz
 #
 #   --keep [M ...]       Space-separated list of model names to include in the output.
 #                        Omit flag → uses the default 8-model set.
@@ -87,12 +87,12 @@
 #                        Changing the seed produces a different random baseline.
 #
 #   --save PATH          Override output .npz path.
-#                        default: routeprofile/model_profile_result/{mode}/index.npz
+#                        default: results/model_profile_result/{mode}/index.npz
 #
 # ── emb_gnn (emb_gnn_profile.py) ─────────────────────────────────────────────
 #
 #   --graph PATH         Input HeteroData graph .pt file.
-#                        default: profile_data/result_data_graph/{mode}/task_graph_full.pt
+#                        default: results/result_data_graph/{mode}/task_graph_full.pt
 #                        Tip: graphs with more node types give richer multi-hop propagation.
 #                        task_domain_graph_full.pt adds domain↔dataset edges so model
 #                        embeddings also absorb domain-level signals after 2+ hops.
@@ -118,7 +118,7 @@
 #                        Useful when comparing profiles with cosine similarity (SimRouter).
 #
 #   --save PATH          Override output .npz path.
-#                        default: routeprofile/model_profile_result/{mode}/emb_gnn.npz
+#                        default: results/model_profile_result/{mode}/emb_gnn.npz
 #
 #   --keep [M ...]       Model names to save (same semantics as --keep in flat).
 #
@@ -126,7 +126,7 @@
 #   NOTE: requires a GPU and vLLM installed (`pip install vllm`).
 #
 #   --graph PATH         Input HeteroData graph .pt file.
-#                        default: profile_data/result_data_graph/{mode}/query_task_domain_graph_full.pt
+#                        default: results/result_data_graph/{mode}/query_task_domain_graph_full.pt
 #                        Tip: this method benefits from the richest graph because the LLM
 #                        prompt is built from neighbour node_feature_texts of all types.
 #                        Using query_task_domain_graph_full.pt gives the LLM access to
@@ -156,10 +156,10 @@
 #                        Increase for large vLLM models (e.g. --tp 4 for 70B models).
 #
 #   --emb-save PATH      Override output path for Longformer embeddings (.npz).
-#                        default: routeprofile/model_profile_result/{mode}/text_gnn.npz
+#                        default: results/model_profile_result/{mode}/text_gnn.npz
 #
 #   --text-save PATH     Override output path for generated text summaries (.json).
-#                        default: routeprofile/model_profile_result/{mode}/text_gnn_texts.json
+#                        default: results/model_profile_result/{mode}/text_gnn_texts.json
 #
 # =============================================================================
 
@@ -228,4 +228,4 @@ case "${METHOD}" in
 esac
 
 echo ""
-echo "✅ Profiles saved to: ${PROJECT_ROOT}/routeprofile/model_profile_result/${MODE}/"
+echo "✅ Profiles saved to: ${PROJECT_ROOT}/results/model_profile_result/${MODE}/"

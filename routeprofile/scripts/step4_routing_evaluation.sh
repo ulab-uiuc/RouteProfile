@@ -17,7 +17,7 @@
 #             - mlp   : MLPRouter  (trains and evaluates)
 #             - graph : GraphRouter (trains and evaluates)
 #             - all   : runs sim, mlp, graph in sequence
-#   PROFILE : profile .npz filename inside routeprofile/model_profile_result/{mode}/
+#   PROFILE : profile .npz filename inside results/model_profile_result/{mode}/
 #             default: flat.npz
 #             other options: index.npz | emb_gnn.npz | trainable_gnn.npz | text_gnn.npz
 #   OPTIONS : extra flags forwarded to the selected router script
@@ -36,13 +36,13 @@
 #   bash routeprofile/scripts/step4_routing_evaluation.sh standard all flat.npz
 #
 # Outputs (per mode and router):
-#   routeprofile/routing_result/{mode}/SimRouter_results.json
-#   routeprofile/routing_result/{mode}/MLPRouter_results.json
-#   routeprofile/routing_result/{mode}/GraphRouter_results.json
+#   results/routing_result/{mode}/SimRouter_results.json
+#   results/routing_result/{mode}/MLPRouter_results.json
+#   results/routing_result/{mode}/GraphRouter_results.json
 #
 # Trained checkpoints:
-#   routeprofile/routing_evaluation/trained_MLPRouter/{mode}/mlp_router_ckpt.pt
-#   routeprofile/routing_evaluation/trained_GraphRouter/{mode}/graphrouter_ckpt.pt
+#   results/trained_MLPRouter/{mode}/mlp_router_ckpt.pt
+#   results/trained_GraphRouter/{mode}/graphrouter_ckpt.pt
 # =============================================================================
 
 set -e
@@ -61,7 +61,7 @@ if [ "${MODE}" != "standard" ] && [ "${MODE}" != "newllm" ]; then
     exit 1
 fi
 
-PROFILE_PATH="${PROJECT_ROOT}/routeprofile/model_profile_result/${MODE}/${PROFILE_FILE}"
+PROFILE_PATH="${PROJECT_ROOT}/results/model_profile_result/${MODE}/${PROFILE_FILE}"
 
 run_sim() {
     echo "[SimRouter] Running similarity-based routing ..."
@@ -117,4 +117,4 @@ case "${ROUTER}" in
 esac
 
 echo ""
-echo "✅ Routing results saved to: ${PROJECT_ROOT}/routeprofile/routing_result/${MODE}/"
+echo "✅ Routing results saved to: ${PROJECT_ROOT}/results/routing_result/${MODE}/"

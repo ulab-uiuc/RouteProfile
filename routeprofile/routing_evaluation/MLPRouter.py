@@ -525,60 +525,125 @@ def train(
     print(f"✅ Done!  Best val_loss={best_val_loss:.4f}")
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# ── Python API ────────────────────────────────────────────────────────────────
 
-def main() -> None:
+def call_mlprouter(
+    mode:               str        = "standard",
+    model_profile_path: str | None = None,
+    training_data_path: str | None = None,
+    testing_data_path:  str | None = None,
+    output_path:        str | None = None,
+    save_ckpt:          str | None = None,
+    cache:              str | None = None,
+    hidden_dim:         int        = DEFAULT_HIDDEN_DIM,
+    out_dim:            int        = DEFAULT_OUT_DIM,
+    num_layers:         int        = DEFAULT_NUM_LAYERS,
+    dropout:            float      = DEFAULT_DROPOUT,
+    margin:             float      = DEFAULT_MARGIN,
+    lr:                 float      = DEFAULT_LR,
+    epochs:             int        = DEFAULT_EPOCHS,
+    batch_size:         int        = DEFAULT_BATCH_SIZE,
+    seed:               int        = DEFAULT_SEED,
+    val_split:          float      = 0.1,
+) -> None:
+    """
+    Train and evaluate the MLPRouter end-to-end.
+
+    Args:
+        mode               : "standard" or "newllm" — selects default paths
+        model_profile_path : path to model profile .npz (None → auto)
+        training_data_path : path to routing_train_data.json (None → auto)
+        testing_data_path  : path to routing_test_data.json (None → auto)
+        output_path        : path to save results JSON (None → auto)
+        save_ckpt          : checkpoint output path (None → auto)
+        cache              : cache path for train query embeddings (.pt)
+        hidden_dim         : MLP hidden layer width (default 512)
+        out_dim            : MLP output dimension (default 256)
+        num_layers         : number of MLP layers (default 2)
+        dropout            : dropout rate (default 0.1)
+        margin             : pairwise ranking margin (default 0.2)
+        lr                 : AdamW learning rate (default 1e-4)
+        epochs             : training epochs (default 20)
+        batch_size         : training batch size (default 32)
+        seed               : random seed (default 42)
+        val_split          : fraction of data held out for validation (default 0.1)
+    """
     import os
-    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    _PR = os.path.join(ROOT_DIR, "routeprofile")
-    _RD = os.path.join(ROOT_DIR, "route_data")
-
-    parser = argparse.ArgumentParser(
-        description="MLPRouter: pairwise ranking loss, test on routing_test_data."
-    )
-    parser.add_argument("--mode",        choices=["standard", "newllm"], default="standard",
-                        help="Routing setting: standard or newllm (default: standard)")
-    parser.add_argument("--profiles",    default=None,
-                        help="Path to model profile embeddings (.npz) "
-                             "(default: routeprofile/model_profile_result/{mode}/flat.npz)")
-    parser.add_argument("--train-data",  default=None,
-                        help="Path to routing_train_data.json "
-                             "(default: route_data/routing_train_data.json)")
-    parser.add_argument("--test-data",   default=None,
-                        help="Path to routing_test_data.json "
-                             "(default: route_data/routing_test_data.json)")
-    parser.add_argument("--output",      default=None,
-                        help="Output results JSON "
-                             "(default: routeprofile/routing_result/{mode}/MLPRouter_results.json)")
-    parser.add_argument("--save-ckpt",   default=None,
-                        help="Checkpoint path "
-                             "(default: routeprofile/routing_evaluation/trained_MLPRouter/{mode}/mlp_router_ckpt.pt)")
-    parser.add_argument("--cache",       default=None,
-                        help="Cache path for train query embeddings (.pt)")
-    parser.add_argument("--hidden-dim",  type=int,   default=DEFAULT_HIDDEN_DIM)
-    parser.add_argument("--out-dim",     type=int,   default=DEFAULT_OUT_DIM)
-    parser.add_argument("--num-layers",  type=int,   default=DEFAULT_NUM_LAYERS)
-    parser.add_argument("--dropout",     type=float, default=DEFAULT_DROPOUT)
-    parser.add_argument("--margin",      type=float, default=DEFAULT_MARGIN)
-    parser.add_argument("--lr",          type=float, default=DEFAULT_LR)
-    parser.add_argument("--epochs",      type=int,   default=DEFAULT_EPOCHS)
-    parser.add_argument("--batch-size",  type=int,   default=DEFAULT_BATCH_SIZE)
-    parser.add_argument("--seed",        type=int,   default=DEFAULT_SEED)
-    parser.add_argument("--val-split",   type=float, default=0.1)
-    args = parser.parse_args()
-
-    _result_dir = os.path.join(_PR, "routing_result", args.mode)
-    _ckpt_dir   = os.path.join(_PR, "routing_evaluation", "trained_MLPRouter", args.mode)
+    ROOT_DIR    = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    _RD         = os.path.join(ROOT_DIR, "route_data")
+    _RESULTS    = os.path.join(ROOT_DIR, "results")
+    _result_dir = os.path.join(_RESULTS, "routing_result", mode)
+    _ckpt_dir   = os.path.join(_RESULTS, "trained_MLPRouter", mode)
     os.makedirs(_result_dir, exist_ok=True)
     os.makedirs(_ckpt_dir,   exist_ok=True)
 
     train(
-        profiles_path=args.profiles   or os.path.join(_PR, "model_profile_result", args.mode, "flat.npz"),
-        train_data_path=args.train_data or os.path.join(_RD, "routing_train_data.json"),
-        test_data_path=args.test_data  or os.path.join(_RD, "routing_test_data.json"),
-        output_path=args.output        or os.path.join(_result_dir, "MLPRouter_results.json"),
-        save_ckpt_path=args.save_ckpt  or os.path.join(_ckpt_dir, "mlp_router_ckpt.pt"),
-        cache_path=args.cache,
+        profiles_path=model_profile_path or os.path.join(_RESULTS, "model_profile_result", mode, "flat.npz"),
+        train_data_path=training_data_path or os.path.join(_RD, "pairwise_training_data_standard.json"),
+        test_data_path=testing_data_path  or os.path.join(_RD, "routing_test_data.json"),
+        output_path=output_path           or os.path.join(_result_dir, "MLPRouter_results.json"),
+        save_ckpt_path=save_ckpt          or os.path.join(_ckpt_dir, "mlp_router_ckpt.pt"),
+        cache_path=cache,
+        hidden_dim=hidden_dim,
+        out_dim=out_dim,
+        num_layers=num_layers,
+        dropout=dropout,
+        margin=margin,
+        lr=lr,
+        epochs=epochs,
+        batch_size=batch_size,
+        seed=seed,
+        val_split=val_split,
+    )
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def cli() -> None:
+    import os
+
+    parser = argparse.ArgumentParser(
+        description="MLPRouter: pairwise ranking loss, test on routing_test_data."
+    )
+    parser.add_argument("--mode",               choices=["standard", "newllm"], default="standard",
+                        help="Routing setting: standard or newllm (default: standard)")
+    parser.add_argument("--model-profile-path", default=None,
+                        help="Path to model profile embeddings (.npz) "
+                             "(default: routeprofile/model_profile_result/{mode}/flat.npz)")
+    parser.add_argument("--training-data-path", default=None,
+                        help="Path to routing_train_data.json "
+                             "(default: route_data/routing_train_data.json)")
+    parser.add_argument("--testing-data-path",  default=None,
+                        help="Path to routing_test_data.json "
+                             "(default: route_data/routing_test_data.json)")
+    parser.add_argument("--output-path",        default=None,
+                        help="Output results JSON "
+                             "(default: routeprofile/routing_result/{mode}/MLPRouter_results.json)")
+    parser.add_argument("--save-ckpt",          default=None,
+                        help="Checkpoint path "
+                             "(default: routeprofile/routing_evaluation/trained_MLPRouter/{mode}/mlp_router_ckpt.pt)")
+    parser.add_argument("--cache",              default=None,
+                        help="Cache path for train query embeddings (.pt)")
+    parser.add_argument("--hidden-dim",         type=int,   default=DEFAULT_HIDDEN_DIM)
+    parser.add_argument("--out-dim",            type=int,   default=DEFAULT_OUT_DIM)
+    parser.add_argument("--num-layers",         type=int,   default=DEFAULT_NUM_LAYERS)
+    parser.add_argument("--dropout",            type=float, default=DEFAULT_DROPOUT)
+    parser.add_argument("--margin",             type=float, default=DEFAULT_MARGIN)
+    parser.add_argument("--lr",                 type=float, default=DEFAULT_LR)
+    parser.add_argument("--epochs",             type=int,   default=DEFAULT_EPOCHS)
+    parser.add_argument("--batch-size",         type=int,   default=DEFAULT_BATCH_SIZE)
+    parser.add_argument("--seed",               type=int,   default=DEFAULT_SEED)
+    parser.add_argument("--val-split",          type=float, default=0.1)
+    args = parser.parse_args()
+
+    call_mlprouter(
+        mode=args.mode,
+        model_profile_path=args.model_profile_path,
+        training_data_path=args.training_data_path,
+        testing_data_path=args.testing_data_path,
+        output_path=args.output_path,
+        save_ckpt=args.save_ckpt,
+        cache=args.cache,
         hidden_dim=args.hidden_dim,
         out_dim=args.out_dim,
         num_layers=args.num_layers,
@@ -593,4 +658,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    cli()
