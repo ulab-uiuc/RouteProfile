@@ -25,8 +25,16 @@ scipy>=1.11.0
 # Data handling
 pyyaml>=6.0
 
+# HuggingFace Hub (for uploading/downloading datasets)
+huggingface_hub>=0.20.0
+
+# LLMRouter
+llmrouter-lib
+
 # Optional: vLLM for text_gnn_profile.py (requires GPU, install separately)
 # vllm>=0.3.0
 
-# LLMRouter
-pip install llmrouter-lib
+# Development / packaging
+# pytest>=7.0
+# build
+# twine
