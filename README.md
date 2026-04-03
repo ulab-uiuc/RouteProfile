@@ -1,12 +1,73 @@
-# RouteProfile: Elucidating the Design Space of LLM Profiles for Routing
+<div align="center">
+  <img src="./assets/logo.jpg" alt="LLMRouter Logo" width="150">
+</div>
 
-As the large language model (LLM) ecosystem expands, individual models exhibit varying capabilities across queries, benchmarks, and domains, motivating the development of LLM routing. While prior work has largely focused on router mechanism design, **LLM profiles**—which capture model capabilities—remain underexplored.
 
-**RouteProfile** treats LLM profiling as a structured information integration problem over heterogeneous interaction histories and develops a general design space of LLM profiles along four key dimensions: *organizational form*, *representation type*, *aggregation depth*, and *learning configuration*. Through systematic evaluation across three representative routers under both standard and new-LLM generalization settings, we show that structured profiles consistently outperform flat ones, query-level signals are more reliable than coarse domain-level signals, and generalization to newly introduced models benefits most from structured profiles under trainable configurations.
 
+<h1 align="center">RouteProfile: Elucidating the Design Space of LLM Profiles for Routing</h1>
+
+
+
+
+<div align="center">
+  <p>
+    <a href='placeholder'><img src='https://img.shields.io/badge/Project-Page-00d9ff?style=for-the-badge&logo=github&logoColor=white'></a>
+    <a href='placeholder'><img src='https://img.shields.io/badge/arXiv-xxxx.xxxxx-ff6b6b?style=for-the-badge&logo=arxiv&logoColor=white'></a>
+    <a href="placeholder"><img src="https://img.shields.io/badge/HuggingFace-Paper-FFD21E?style=for-the-badge&logo=huggingface&logoColor=FFD21E" alt="HuggingFace Paper"></a>
+    <a href="https://huggingface.co/collections/ulab-ai/routeprofile"><img src="https://img.shields.io/badge/HuggingFace-Collection-FFD21E?style=for-the-badge&logo=huggingface&logoColor=FFD21E" alt="HuggingFace Collection"></a>
+  </p>
+</div>
+
+## 🧩 Overview
+
+**RouteProfile** is a general framework for **designing LLM profiles for routing**. It formulates LLM profiling as a structured information integration problem over heterogeneous interaction histories, enabling more principled and effective routing across queries, domains, and models.
+
+**Highlights**:
+- **General profile design space**: Define LLM profiles along four dimensions: *organizational form*, *representation type*, *aggregation depth*, and *learning configuration*.
+- **Comprehensive evaluation**: Evaluate LLM profiles across three representative routers under both standard routing and new-LLM routing settings.
+
+<div align="center">
+  <img src="./assets/routeprofile.png" width="800" alt="RouteProfile">
+</div>
+
+## 🔗 Links
+
+- [Overview](#-overview)
+- [Get Started](#-get-started)
+  - [Pipeline Overview](#pipeline-overview)
+  - [Installation](#installation)
+  - [Profiling Methods](#profiling-methods)
+- [Python Usage](#-python-usage)
+- [CLI Usage](#-cli-usage)
+- [Shell Scripts Usage](#-shell-scripts-usage)
+- [Extra Information](#-extra-information)
+  - [Directory Structure](#directory-structure)
+  - [Data Formats](#data-formats)
+  - [Candidate Models](#candidate-models)
+  - [Router Methods](#router-methods)
+- [Citation](#-citation)
+
+## 🚀 Get Started
+
+### Pipeline Overview
 ---
 
-## Installation
+```
+Step 1: Data Collection   →  profile_data/                        (manual / provided)
+Step 2: Build Data Graph  →  results/result_data_graph/{mode}/
+Step 3: Build Profile     →  results/model_profile_result/{mode}/
+Step 4: Route & Evaluate  →  results/routing_result/{mode}/
+```
+
+Two routing settings:
+
+| Mode       | Description                                         |
+|------------|-----------------------------------------------------|
+| `standard` | Standard routing with a known set of candidate LLMs |
+| `newllm`   | Generalisation to newly introduced, unseen LLMs     |
+
+### Installation
+---
 
 ```bash
 pip install routeprofile
@@ -26,27 +87,20 @@ cd RouteProfile
 pip install -e .
 ```
 
+
+### Profiling Methods
 ---
 
-## Pipeline Overview
+| Method      | File                  | Org. form  | Repr. type  | Agg. depth | Learning |
+|-------------|-----------------------|------------|-------------|------------|----------|
+| `flat`      | `flat.npz`            | Flat       | Text        | 0    | Training-free     |
+| `index`     | `index.npz`           | Flat       | Embedding      | 0       | Training-free     |
+| `emb_gnn`   | `emb_gnn.npz`         | Structured | Embedding   | Multi-hop  | Training-free     |
+| `text_gnn`  | `text_gnn.npz`        | Structured | Text  | Multi-hop  | Training-free     |
+| `trainable` | `trainable_gnn.npz`   | Structured | Embedding   | Multi-hop  | Trainable |
 
-```
-Step 1: Data Collection   →  profile_data/                        (manual / provided)
-Step 2: Build Data Graph  →  results/result_data_graph/{mode}/
-Step 3: Build Profile     →  results/model_profile_result/{mode}/
-Step 4: Route & Evaluate  →  results/routing_result/{mode}/
-```
 
-Two routing settings:
-
-| Mode       | Description                                         |
-|------------|-----------------------------------------------------|
-| `standard` | Standard routing with a known set of candidate LLMs |
-| `newllm`   | Generalisation to newly introduced, unseen LLMs     |
-
----
-
-## Python API
+## 🧪 Python Usage
 
 All functions are importable directly from `routeprofile`:
 
@@ -56,6 +110,7 @@ print(routeprofile.__version__)  # "0.1.0"
 ```
 
 ### Step 2 — Build Data Graphs
+---
 
 ```python
 from routeprofile import (
@@ -83,6 +138,7 @@ build_query_task_domain_graph(
 ```
 
 ### Step 3a — Training-Free Profiles
+---
 
 ```python
 from routeprofile import (
@@ -123,6 +179,7 @@ build_text_gnn_profile(
 ```
 
 ### Step 3b — Trainable GNN Profile (HANConv)
+---
 
 ```python
 from routeprofile import build_trainable_gnn_profile
@@ -139,6 +196,7 @@ build_trainable_gnn_profile(
 ```
 
 ### Step 4 — Routing Evaluation
+---
 
 ```python
 from routeprofile import call_simrouter, call_mlprouter, call_graphrouter
@@ -177,9 +235,7 @@ You can also import the router classes directly:
 from routeprofile import SimRouter, MLPRouter, GraphRouter
 ```
 
----
-
-## CLI
+## 🧭 CLI Usage
 
 After installation every step is available as a command-line tool:
 
@@ -217,9 +273,7 @@ routeprofile-graph-router \
 
 All commands accept `--help` for full usage.
 
----
-
-## Shell Scripts (Batch Runs)
+## 🔧 Shell Scripts Usage
 
 ```bash
 # Build all graphs (standard mode)
@@ -239,30 +293,10 @@ bash routeprofile/scripts/step4_routing_evaluation.sh standard sim flat.npz
 bash routeprofile/scripts/step4_routing_evaluation.sh standard all flat.npz
 ```
 
+## 📊 Extra Information
+
+### Directory Structure
 ---
-
-## Profile Methods
-
-| Method      | File                  | Org. form  | Repr. type  | Agg. depth | Learning |
-|-------------|-----------------------|------------|-------------|------------|----------|
-| `flat`      | `flat.npz`            | Flat       | Text        | Shallow    | None     |
-| `index`     | `index.npz`           | Flat       | Random      | None       | None     |
-| `emb_gnn`   | `emb_gnn.npz`         | Structured | Embedding   | Multi-hop  | None     |
-| `text_gnn`  | `text_gnn.npz`        | Structured | Text + LLM  | Multi-hop  | None     |
-| `trainable` | `trainable_gnn.npz`   | Structured | Embedding   | Multi-hop  | Self-sup |
-
-## Router Methods
-
-| Router       | Type          | Description                                          |
-|--------------|---------------|------------------------------------------------------|
-| `SimRouter`  | Training-free | Cosine similarity between query and model embeddings |
-| `MLPRouter`  | Trainable     | Pairwise ranking loss; query + model encoders        |
-| `GraphRouter`| Trainable     | Bipartite GAT with edge prediction (BCE loss)        |
-
----
-
-## Directory Structure
-
 ```
 RouteProfile/
 ├── profile_data/                        # Input data (read-only)
@@ -301,11 +335,9 @@ RouteProfile/
 └── pyproject.toml
 ```
 
+### Data Formats
 ---
-
-## Data Formats
-
-### `profile_data/model_feature_{standard|newllm}.json`
+#### `profile_data/model_feature_{standard|newllm}.json`
 Main model metadata. Primary input to all graph builders.
 ```json
 {
@@ -328,7 +360,7 @@ Main model metadata. Primary input to all graph builders.
 }
 ```
 
-### `profile_data/model_family_feature.json`
+#### `profile_data/model_family_feature.json`
 Architecture family descriptions used as architecture node features.
 ```json
 {
@@ -337,7 +369,7 @@ Architecture family descriptions used as architecture node features.
 }
 ```
 
-### `profile_data/task_feature.json`
+#### `profile_data/task_feature.json`
 Natural language description of each benchmark task.
 ```json
 {
@@ -346,7 +378,7 @@ Natural language description of each benchmark task.
 }
 ```
 
-### `profile_data/domain_task_map.json`
+#### `profile_data/domain_task_map.json`
 Maps broad task domains to specific benchmarks.
 ```json
 {
@@ -357,7 +389,7 @@ Maps broad task domains to specific benchmarks.
 }
 ```
 
-### `profile_data/domain_feature.json`
+#### `profile_data/domain_feature.json`
 Natural language description of each task domain.
 ```json
 {
@@ -367,7 +399,7 @@ Natural language description of each task domain.
 }
 ```
 
-### `profile_data/candidate_models.json`
+#### `profile_data/candidate_models.json`
 Candidate model metadata including API endpoints and aggregate scores.
 ```json
 {
@@ -387,7 +419,7 @@ Candidate model metadata including API endpoints and aggregate scores.
 }
 ```
 
-### `profile_data/task_queries_{standard|newllm}.json`
+#### `profile_data/task_queries_{standard|newllm}.json`
 Per-benchmark query lists used to build query nodes.
 ```json
 {
@@ -396,7 +428,7 @@ Per-benchmark query lists used to build query nodes.
 }
 ```
 
-### `route_data/routing_test_data.json`
+#### `route_data/routing_test_data.json`
 Pre-computed model responses for test queries.
 ```json
 [
@@ -413,7 +445,7 @@ Pre-computed model responses for test queries.
 ]
 ```
 
-### `route_data/pairwise_training_data_{standard|newllm}.json`
+#### `route_data/pairwise_training_data_{standard|newllm}.json`
 Pairwise training data for MLPRouter and GraphRouter. Each entry records which model outperforms which on a given query.
 ```json
 {
@@ -438,9 +470,8 @@ Pairwise training data for MLPRouter and GraphRouter. Each entry records which m
 
 > **Note:** Use `pairwise_training_data_{mode}.json` as `training_data_path` for MLPRouter and GraphRouter. The `routing_test_data.json` is used for `testing_data_path`.
 
+### Candidate Models
 ---
-
-## Candidate Models
 
 The default set of 8 candidate models:
 
@@ -455,9 +486,16 @@ The default set of 8 candidate models:
 | `mistral-small-24b-instruct-2501-bf16`  | 24B   | MistralForCausalLM |
 | `llama-3.3-70b-instruct`                | 70B   | LlamaForCausalLM   |
 
+### Router Methods
 ---
 
-## Citation
+| Router       | Type          | Description                                          |
+|--------------|---------------|------------------------------------------------------|
+| `SimRouter`  | Training-free | Cosine similarity between query and model embeddings |
+| `MLPRouter`  | Trainable     | Pairwise ranking loss; query + model encoders        |
+| `GraphRouter`| Trainable     | Bipartite GAT with edge prediction (BCE loss)        |
+
+## 📚 Citation
 
 If you use RouteProfile in your research, please cite:
 
