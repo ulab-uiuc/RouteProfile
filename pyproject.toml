@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "routeprofile"
-version = "0.1.0"
-description = "Heterogeneous graph-based LLM profiles for routing — design space exploration"
+version = "0.1.1"
+description = "Building LLM profiles for routing"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

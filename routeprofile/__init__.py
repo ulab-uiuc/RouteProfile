@@ -1,5 +1,5 @@
 """RouteProfile: Heterogeneous graph-based model profiles for LLM routing."""
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from routeprofile.build_data_graph import (
     build_task_graph,

@@ -3,7 +3,7 @@
 
 def test_version():
     import routeprofile
-    assert routeprofile.__version__ == "0.1.0"
+    assert routeprofile.__version__ == "0.1.1"
 
 
 def test_build_graph_functions():
