@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/logo.jpg" alt="LLMRouter Logo" width="150">
+  <img src="./assets/logo.jpg" alt="RouteProfile Logo" width="150">
 </div>
 
 
@@ -11,7 +11,7 @@
 
 <div align="center">
   <p>
-    <a href='placeholder'><img src='https://img.shields.io/badge/Project-Page-00d9ff?style=for-the-badge&logo=github&logoColor=white'></a>
+    <a href='https://ulab-uiuc.github.io/RouteProfile/'><img src='https://img.shields.io/badge/Project-Page-00d9ff?style=for-the-badge&logo=github&logoColor=white'></a>
     <a href='placeholder'><img src='https://img.shields.io/badge/arXiv-xxxx.xxxxx-ff6b6b?style=for-the-badge&logo=arxiv&logoColor=white'></a>
     <a href="placeholder"><img src="https://img.shields.io/badge/HuggingFace-Paper-FFD21E?style=for-the-badge&logo=huggingface&logoColor=FFD21E" alt="HuggingFace Paper"></a>
     <a href="https://huggingface.co/collections/ulab-ai/routeprofile"><img src="https://img.shields.io/badge/HuggingFace-Collection-FFD21E?style=for-the-badge&logo=huggingface&logoColor=FFD21E" alt="HuggingFace Collection"></a>
