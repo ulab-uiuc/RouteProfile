@@ -501,7 +501,10 @@ If you use RouteProfile in your research, please cite:
 
 ```bibtex
 @article{routeprofile2025,
-  title={RouteProfile: Elucidating the Design Space of LLM Profiles for Routing},
-  year={2025}
+  title     = {RouteProfile: Elucidating the Design Space of LLM Profiles for Routing},
+  author    = {Xu, Jingjun and Pu, Hongji and Feng, Tao and Zhang, Haozhen and You, Jiaxuan and Liu, Ge},
+  journal   = {arXiv preprint arXiv:2605.00180},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2605.00180}
 }
 ```
